@@ -789,7 +789,7 @@ def run_experiments(
     for model in models:
         for distribution in distributions:
             for p in p_values:
-                # Set sigma based on model
+                # Set sigma
                 sigma = 0.2
                 
                 # Create temp output filename
@@ -880,8 +880,8 @@ df = run_experiments(
     
 #     args = parser.parse_args()
     
-#     # Set sigma based on model
-#     sigma = 2.0 if args.model == 'M3_func2' else 0.2
+#     # Set sigma
+#     sigma = 0.2
     
 #     df = run_experiment_single(
 #         model=args.model,
