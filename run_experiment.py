@@ -790,7 +790,7 @@ def run_experiments(
         for distribution in distributions:
             for p in p_values:
                 # Set sigma based on model
-                sigma = 2.0 if model == 'M3_func2' else 0.2
+                sigma = 0.2
                 
                 # Create temp output filename
                 temp_output = f"temp_{model}_{distribution}_p{p}.csv"
