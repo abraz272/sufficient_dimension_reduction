@@ -734,167 +734,48 @@ def run_experiment_single(model, distribution, n_reps=100, p=10, degree=3,
     
     return df
 
-#### Minimal call for local experimenting
-
-def run_experiments(
-    models=['M1', 'M2', 'M3_func1', 'M3_func2'],
-    sample_sizes=[50, 100, 400, 1000, 2000, 5000],
-    p_values=[5, 10],
-    distributions=['uniform', 'normal'],
-    methods=['hat', 'nw'],
-    n_reps=100,
-    global_seed=42,
-    output_file='results.csv'
-):
-    """
-    Run experiments across multiple configurations.
-    
-    Parameters
-    ----------
-    models : list
-        Models to test, e.g. ['M1', 'M2', 'M3_func1', 'M3_func2']
-    sample_sizes : list
-        Sample sizes to test, e.g. [50, 100, 400, 1000]
-    p_values : list
-        Number of predictors, e.g. [5, 10]
-    distributions : list
-        X distributions, e.g. ['uniform', 'normal']
-    methods : list
-        Methods to run, e.g. ['hat', 'nw'] or ['hat'] or ['nw']
-    n_reps : int
-        Number of replications per configuration
-    global_seed : int
-        Random seed
-    output_file : str or None
-        CSV filename to save combined results (None to skip saving)
-    
-    Returns
-    -------
-    df : pd.DataFrame
-        Combined results for all configurations
-    """
-    all_results = []
-    
-    # Determine method parameter for run_experiment_single
-    if set(methods) == {'hat', 'nw'}:
-        method_arg = 'all'
-    elif 'hat' in methods:
-        method_arg = 'hat'
-    elif 'nw' in methods:
-        method_arg = 'nw'
-    else:
-        raise ValueError("methods must contain 'hat' and/or 'nw'")
-    
-    # Iterate over all configurations
-    for model in models:
-        for distribution in distributions:
-            for p in p_values:
-                # Set sigma
-                sigma = 0.2
-                
-                # Create temp output filename
-                temp_output = f"temp_{model}_{distribution}_p{p}.csv"
-                
-                # Run experiment for this configuration
-                df = run_experiment_single(
-                    model=model,
-                    distribution=distribution,
-                    n_reps=n_reps,
-                    p=p,
-                    sigma=sigma,
-                    global_seed=global_seed,
-                    output_file=None,  # Don't save individual files
-                    method=method_arg,
-                    sample_size=None  # Run all sample sizes
-                )
-                
-                # Filter to requested sample sizes
-                df = df[df['n'].isin(sample_sizes)]
-                
-                # Add p column
-                df.insert(4, 'p', p)
-                
-                all_results.append(df)
-    
-    # Combine all results
-    combined_df = pd.concat(all_results, ignore_index=True)
-    
-    # Reorder columns
-    column_order = ['Method', 'Model', 'X_dist', 'p', 'n', 'n_reps', 'd_true', 'n_correct',
-                    'dim_accuracy', 
-                    'time_mean', 'time_std', 
-                    'subspace_error_mean', 'subspace_error_std',
-                    'minimize_time_mean', 'minimize_time_std',
-                    'minimize_iters_mean', 'minimize_iters_std',
-                    'time_per_iter_mean', 'time_per_iter_std',
-                    'time_all_mean', 'time_all_std',
-                    'subspace_error_all_mean', 'subspace_error_all_std',
-                    'minimize_time_all_mean', 'minimize_time_all_std',
-                    'minimize_iters_all_mean', 'minimize_iters_all_std',
-                    'time_per_iter_all_mean', 'time_per_iter_all_std']
-    combined_df = combined_df[column_order]
-    
-    # Save combined results
-    if output_file:
-        combined_df.to_csv(output_file, index=False)
-        print(f"\nAll results saved to '{output_file}'")
-    
-    return combined_df
-
-
-# Example: Quick test with minimal configuration
-df = run_experiments(
-    models=['M1'],
-    sample_sizes=[100, 400],
-    p_values=[5],
-    distributions=['uniform'],
-    methods=['hat'],
-    n_reps=50,
-    output_file='quick_test.csv'
-)
-
 #### Below is for command-line execution (used for ALICE cluster experiments)
 
 
-# if __name__ == '__main__':
-#     parser = argparse.ArgumentParser(description='Run dimension reduction experiments')
-#     parser.add_argument('--model', type=str, required=True,
-#                        choices=['M1', 'M2', 'M3_func1', 'M3_func2'],
-#                        help='Model to run')
-#     parser.add_argument('--distribution', type=str, required=True,
-#                        choices=['uniform', 'normal'],
-#                        help='Distribution for X')
-#     parser.add_argument('--method', type=str, default='all',
-#                        choices=['hat', 'nw', 'all'],
-#                        help='Method to run')
-#     parser.add_argument('--sample_size', type=int, default=None,
-#                        help='Single sample size to run (default: all)')
-#     parser.add_argument('--n_reps', type=int, default=100,
-#                        help='Number of replications')
-#     parser.add_argument('--p', type=int, default=10,
-#                        help='Number of predictors')
-#     parser.add_argument('--seed', type=int, default=42,
-#                        help='Global random seed')
-#     parser.add_argument('--output', type=str, default=None,
-#                        help='Output CSV file')
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Run dimension reduction experiments')
+    parser.add_argument('--model', type=str, required=True,
+                       choices=['M1', 'M2', 'M3_func1', 'M3_func2'],
+                       help='Model to run')
+    parser.add_argument('--distribution', type=str, required=True,
+                       choices=['uniform', 'normal'],
+                       help='Distribution for X')
+    parser.add_argument('--method', type=str, default='all',
+                       choices=['hat', 'nw', 'all'],
+                       help='Method to run')
+    parser.add_argument('--sample_size', type=int, default=None,
+                       help='Single sample size to run (default: all)')
+    parser.add_argument('--n_reps', type=int, default=100,
+                       help='Number of replications')
+    parser.add_argument('--p', type=int, default=10,
+                       help='Number of predictors')
+    parser.add_argument('--seed', type=int, default=42,
+                       help='Global random seed')
+    parser.add_argument('--output', type=str, default=None,
+                       help='Output CSV file')
     
-#     args = parser.parse_args()
+    args = parser.parse_args()
     
-#     # Set sigma
-#     sigma = 0.2
+    # Set sigma
+    sigma = 0.2
     
-#     df = run_experiment_single(
-#         model=args.model,
-#         distribution=args.distribution,
-#         n_reps=args.n_reps,
-#         p=args.p,
-#         sigma=sigma,
-#         global_seed=args.seed,
-#         output_file=args.output,
-#         method=args.method,
-#         sample_size=args.sample_size
-#     )
+    df = run_experiment_single(
+        model=args.model,
+        distribution=args.distribution,
+        n_reps=args.n_reps,
+        p=args.p,
+        sigma=sigma,
+        global_seed=args.seed,
+        output_file=args.output,
+        method=args.method,
+        sample_size=args.sample_size
+    )
     
-#     print("\n" + "="*70)
-#     print("COMPLETED")
-#     print("="*70)
+    print("\n" + "="*70)
+    print("COMPLETED")
+    print("="*70)
